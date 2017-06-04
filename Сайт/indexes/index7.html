@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    <title>Проект Уржумов А.Е.</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css" />
+    <link href="http://fonts.googleapis.com/css?family=Kreon" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <style>
+
+        .links line {
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+
+        .nodes circle {
+            stroke: #fafffb;
+            stroke-width: 1px;
+        }
+
+    </style>
+</head>
+
+<body>
+<div id="wrapper">
+    <div id="header">
+        <div id="logo">
+            <h1> Проект </a></h1>
+        </div>
+        <div id="menu">
+            <ul>
+                <li class="first active"><a href="../index.html">На главную</a></li>
+                <li><a href="https://github.com/AlexUrzhumov/project_visualization">Исходный код</a></li>
+                <li class="last"><a href="#">Свой вариант</a></li>
+            </ul>
+            <br class="clearfix" />
+        </div>
+    </div>
+    <svg width="960" height="1800"></svg>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+
+        var svg = d3.select("svg"),
+            width = +svg.attr("width"),
+            height = +svg.attr("height");
+
+        var simulation = d3.forceSimulation()
+            .force("link", d3.forceLink().id(function(d) { return d.id; }))
+            .force("charge", d3.forceManyBody())
+            .force("center", d3.forceCenter(width / 2, height / 2));
+
+        d3.json("../graphs/graph7.json", function(graph) {
+
+            var link = svg.append("g")
+                .attr("class", "links")
+                .selectAll("line")
+                .data(graph.links)
+                .enter().append("line")
+                .attr("stroke-width", 1);
+
+            var node = svg.append("g")
+                .attr("class", "nodes")
+                .selectAll("circle")
+                .data(graph.nodes)
+                .enter().append("circle")
+                .attr("r", function(d) { return (d.rating / 5 + 5 );})
+                .attr("fill", function(d) { if (d.id == "0") {
+                        return "deepskyblue";
+                    }
+                        if (d.rating == 0) {
+                            return "orangered";
+                        }
+                        if (d.rating < 5) {
+                            return "orange";
+                        }
+                        if (d.rating < 10) {
+                            return "yellow";
+                        }
+                        return "palegreen";
+                    }
+                );
+
+            node.append("title")
+                .text(function(d) { return d.name; });
+
+
+            node .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+            simulation
+                .nodes(graph.nodes)
+                .on("tick", ticked);
+
+            simulation.force("link")
+                .links(graph.links);
+
+            function ticked() {
+                link
+                    .attr("x1", function(d) { return d.source.x; })
+                    .attr("y1", function(d) { return d.source.y; })
+                    .attr("x2", function(d) { return d.target.x; })
+                    .attr("y2", function(d) { return d.target.y; });
+
+                node
+                    .attr("cx", function(d) { return d.x; })
+                    .attr("cy", function(d) { return d.y; });
+            }
+        });
+
+        function dragstarted(d) {
+            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+        function dragged(d) {
+            d.fx = d3.event.x;
+            d.fy = d3.event.y;
+        }
+        function dragended(d) {
+            if (!d3.event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+    </script>
+    <div id="page-bottom">
+        <div id="page-bottom-content">
+            <p>
+                Уржумов Александр Евгеньевич БПМИ-154
+            </p>
+        </div>
+        <br class="clearfix" />
+    </div>
+</div>
+</body>
+</html>
